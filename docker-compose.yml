@@ -1,19 +1,12 @@
 services:
-  frontend:
-    build:
-      context: ./frontend
-    ports:
-      - "127.0.0.1:3030:3030"  # Keep access restricted to localhost
-    volumes:
-      - ./frontend/src:/app/src/
-    networks:
-      - app-network
+
+
 
   backend:
     build:
       context: ./backend
     ports:
-      - "127.0.0.1:5030:5030"  # Keep access restricted to localhost
+      - "127.0.0.1:5030:5030"
     volumes:
       - ./backend/src:/app/src
     networks:
@@ -23,7 +16,14 @@ services:
     build:
       context: ./ollama
     ports:
-      - "127.0.0.1:11434:11434"  # Keep access restricted to localhost
+      - "127.0.0.1:11434:11434"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     networks:
       - app-network
 
@@ -31,9 +31,8 @@ services:
     build:
       context: ./nginx
     ports:
-      - "8080:80"  # Expose port 8080 to host
+      - "8080:80"
     depends_on:
-      - frontend
       - backend
       - ollama
     volumes:
