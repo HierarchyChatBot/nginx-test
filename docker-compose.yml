@@ -1,0 +1,47 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "127.0.0.1:3030:3030"  # Keep access restricted to localhost
+    volumes:
+      - ./frontend/src:/app/src/
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "127.0.0.1:5030:5030"  # Keep access restricted to localhost
+    volumes:
+      - ./backend/src:/app/src
+    networks:
+      - app-network
+
+  ollama:
+    build:
+      context: ./ollama
+    ports:
+      - "127.0.0.1:11434:11434"  # Keep access restricted to localhost
+    networks:
+      - app-network
+
+  nginx:
+    build:
+      context: ./nginx
+    ports:
+      - "8080:80"  # Expose port 8080 to host
+    depends_on:
+      - frontend
+      - backend
+      - ollama
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/htpasswd/.htpasswd:/etc/nginx/.htpasswd:ro
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
